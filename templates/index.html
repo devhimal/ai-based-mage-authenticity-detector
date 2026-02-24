@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Deepfake Detector</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary: #ff3d00;
+        --primary-2: #ff7a18;
+        --text: #111827;
+        --muted: #6b7280;
+        --bg: #0b1020;
+        --card: rgba(255, 255, 255, 0.08);
+        --card-2: rgba(255, 255, 255, 0.06);
+        --border: rgba(255, 255, 255, 0.12);
+        --ring: rgba(255, 61, 0, 0.22);
+        --radius: 18px;
+        --shadow: 0 25px 60px rgba(0, 0, 0, 0.45);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      @keyframes floaty {
+        0% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+        100% {
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          "Poppins",
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Ubuntu,
+          Cantarell,
+          Noto Sans,
+          Helvetica,
+          Arial,
+          "Apple Color Emoji",
+          "Segoe UI Emoji";
+        color: rgba(255, 255, 255, 0.92);
+        background: radial-gradient(
+            900px 500px at 20% 10%,
+            rgba(255, 61, 0, 0.18),
+            transparent 60%
+          ),
+          radial-gradient(
+            700px 420px at 80% 20%,
+            rgba(255, 122, 24, 0.14),
+            transparent 58%
+          ),
+          radial-gradient(
+            900px 600px at 50% 90%,
+            rgba(59, 130, 246, 0.12),
+            transparent 62%
+          ),
+          linear-gradient(180deg, #070a14 0%, #0b1020 65%, #070a14 100%);
+        min-height: 100vh;
+        padding: 44px 18px;
+      }
+
+      .shell {
+        max-width: 1120px;
+        margin: 0 auto;
+        animation: fadeUp 0.8s ease both;
+      }
+
+      /* Top bar */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .logo {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        background: radial-gradient(
+            12px 12px at 30% 30%,
+            rgba(255, 255, 255, 0.9),
+            transparent 45%
+          ),
+          linear-gradient(135deg, var(--primary), var(--primary-2));
+        box-shadow: 0 16px 35px rgba(255, 61, 0, 0.22);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .logo::after {
+        content: "";
+        position: absolute;
+        inset: -30%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.35),
+          transparent
+        );
+        transform: rotate(25deg);
+        animation: floaty 3.8s ease-in-out infinite;
+      }
+
+      .brand-title {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+      }
+      .brand-title strong {
+        font-size: 14px;
+        letter-spacing: 0.2px;
+      }
+      .brand-title span {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.65);
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(34, 197, 94, 0.9);
+        box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.12);
+      }
+
+      /* Main grid */
+      .grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 18px;
+        align-items: start;
+      }
+
+      .card {
+        border-radius: var(--radius);
+        background: linear-gradient(180deg, var(--card), var(--card-2));
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .hero {
+        padding: 30px 28px 26px;
+        position: relative;
+      }
+
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+            600px 240px at 20% 0%,
+            rgba(255, 61, 0, 0.22),
+            transparent 60%
+          ),
+          radial-gradient(
+            520px 220px at 90% 10%,
+            rgba(255, 122, 24, 0.16),
+            transparent 60%
+          );
+        pointer-events: none;
+      }
+
+      .hero h1 {
+        margin: 0 0 8px;
+        font-size: 34px;
+        line-height: 1.1;
+        letter-spacing: -0.4px;
+      }
+
+      .hero h1 .grad {
+        background: linear-gradient(135deg, #ffffff 10%, #ffd7cc 45%, #ff9f7a);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .hero p {
+        margin: 0 0 18px;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 14px;
+        line-height: 1.7;
+        max-width: 62ch;
+      }
+
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.05);
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.74);
+      }
+
+      .chip b {
+        color: rgba(255, 255, 255, 0.92);
+        font-weight: 600;
+      }
+
+      /* Upload */
+      .panel {
+        padding: 22px;
+      }
+
+      .panel h2 {
+        margin: 0 0 4px;
+        font-size: 16px;
+        letter-spacing: 0.2px;
+      }
+
+      .panel p {
+        margin: 0 0 14px;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.6;
+      }
+
+      .drop {
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 22px 16px;
+        border-radius: 16px;
+        border: 1px dashed rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.04);
+        transition:
+          transform 0.22s ease,
+          border-color 0.22s ease,
+          background 0.22s ease,
+          box-shadow 0.22s ease;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .drop:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 61, 0, 0.45);
+        box-shadow: 0 0 0 10px var(--ring);
+        background: rgba(255, 61, 0, 0.06);
+      }
+
+      .icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        margin-bottom: 10px;
+        background: linear-gradient(135deg, rgba(255, 61, 0, 0.9), #ff7a18);
+        box-shadow: 0 18px 35px rgba(255, 61, 0, 0.18);
+      }
+
+      .drop strong {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .drop span {
+        display: block;
+        margin-top: 6px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.62);
+      }
+
+      input[type="file"] {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .btn {
+        appearance: none;
+        border: 1px solid transparent;
+        border-radius: 14px;
+        padding: 12px 14px;
+        font-weight: 600;
+        cursor: pointer;
+        font-size: 13px;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease,
+          filter 0.2s ease,
+          background 0.2s ease,
+          border-color 0.2s ease;
+        user-select: none;
+      }
+
+      .btn-primary {
+        flex: 1;
+        color: white;
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        box-shadow: 0 18px 35px rgba(255, 61, 0, 0.22);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.02);
+        box-shadow: 0 22px 42px rgba(255, 61, 0, 0.28);
+      }
+
+      .btn-ghost {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.12);
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .btn-ghost:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 255, 255, 0.18);
+        background: rgba(255, 255, 255, 0.07);
+      }
+
+      .helper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 12px;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 12px;
+      }
+
+      .helper .tag {
+        padding: 7px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.72);
+        white-space: nowrap;
+      }
+
+      /* Result */
+      .result {
+        padding: 20px 22px 22px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .result-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.05);
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.78);
+      }
+
+      .preview {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(0, 0, 0, 0.25);
+      }
+
+      .preview img {
+        display: block;
+        width: 100%;
+        height: auto;
+        max-height: 320px;
+        object-fit: cover;
+      }
+
+      .kv {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .kv .box {
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+        padding: 12px 12px;
+      }
+
+      .kv .label {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.62);
+        margin-bottom: 6px;
+      }
+
+      .kv .value {
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+
+      .value.real {
+        color: rgba(34, 197, 94, 0.95);
+      }
+
+      .value.fake {
+        color: rgba(255, 61, 0, 0.95);
+      }
+
+      .progress {
+        margin-top: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--primary), var(--primary-2));
+        border-radius: 999px;
+        transition: width 0.6s ease;
+      }
+
+      .error {
+        margin-top: 14px;
+        padding: 12px 12px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 61, 0, 0.35);
+        background: rgba(255, 61, 0, 0.08);
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 13px;
+      }
+
+      /* Info cards */
+      .info {
+        padding: 22px;
+      }
+
+      .info h3 {
+        margin: 0 0 10px;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .list {
+        display: grid;
+        gap: 10px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .item {
+        display: grid;
+        grid-template-columns: 32px 1fr;
+        gap: 10px;
+        align-items: start;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+        padding: 12px 12px;
+        border-radius: 16px;
+      }
+
+      .bubble {
+        width: 32px;
+        height: 32px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.05);
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 700;
+        font-size: 12px;
+      }
+
+      .item p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.72);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .item p strong {
+        color: rgba(255, 255, 255, 0.92);
+      }
+
+      .disclaimer {
+        margin-top: 14px;
+        padding: 14px 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 122, 24, 0.28);
+        background: rgba(255, 122, 24, 0.08);
+        color: rgba(255, 255, 255, 0.75);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      footer {
+        margin-top: 16px;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.55);
+        font-size: 12px;
+      }
+
+      /* Responsive */
+      @media (max-width: 920px) {
+        body {
+          padding: 30px 14px;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .hero h1 {
+          font-size: 30px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .hero {
+          padding: 22px 18px 18px;
+        }
+        .panel,
+        .info {
+          padding: 18px;
+        }
+        .kv {
+          grid-template-columns: 1fr;
+        }
+        .actions {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="shell">
+      <div class="topbar">
+        <a class="brand" href="#">
+          <div class="logo" aria-hidden="true"></div>
+          <div class="brand-title">
+            <strong>Deepfake Detector</strong>
+            <span>AI-based image authenticity check</span>
+          </div>
+        </a>
+        <div class="pill">
+          <span class="dot" aria-hidden="true"></span>
+          Model status: Online
+        </div>
+      </div>
+
+      <div class="grid">
+        <!-- Left: Hero + Upload + Result -->
+        <div class="card">
+          <section class="hero">
+            <h1><span class="grad">AI Image Deepfake</span> Detection</h1>
+            <p>
+              Upload an image to evaluate whether it is likely <b>Real</b> or
+              <b>Deepfake</b>. The system analyzes pixel-level artifacts,
+              lighting inconsistencies, and facial texture patterns to generate
+              an AI-based prediction with confidence.
+            </p>
+
+            <div class="chips">
+              <div class="chip">⚡ <b>Fast</b> results</div>
+              <div class="chip">🛡️ <b>No</b> permanent storage</div>
+              <div class="chip">📊 Confidence score</div>
+              <div class="chip">🧠 Deep learning</div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <h2>Analyze an Image</h2>
+            <p>
+              Click to select an image or drag and drop into the upload area.
+            </p>
+
+            <form method="post" enctype="multipart/form-data" id="uploadForm">
+              <div class="drop" id="dropArea" role="button" tabindex="0">
+                <div class="icon" aria-hidden="true">
+                  <!-- upload icon -->
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 16V4"
+                      stroke="white"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                    />
+                    <path
+                      d="M7 9L12 4L17 9"
+                      stroke="white"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <path
+                      d="M4 20H20"
+                      stroke="white"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </div>
+
+                <strong id="fileTitle">Choose an image</strong>
+                <span id="fileHint"
+                  >PNG, JPG, JPEG • Recommended under 10MB</span
+                >
+
+                <input
+                  type="file"
+                  name="file"
+                  id="file-upload"
+                  accept="image/*"
+                  required
+                />
+              </div>
+
+              <div class="actions">
+                <button class="btn btn-primary" type="submit">
+                  Analyze Image
+                </button>
+                <button class="btn btn-ghost" type="button" id="resetBtn">
+                  Reset
+                </button>
+              </div>
+
+              <div class="helper">
+                <span>We process images securely.</span>
+                <span class="tag">Privacy-first</span>
+              </div>
+            </form>
+
+            {% if error %}
+            <div class="error">⚠️ {{ error }}</div>
+            {% endif %}
+          </section>
+
+          {% if prediction and img_path %}
+          <section class="result" id="result">
+            <div class="result-head">
+              <div>
+                <h2 style="margin: 0; font-size: 16px">Prediction Result</h2>
+                <p
+                  style="
+                    margin: 4px 0 0;
+                    font-size: 12px;
+                    color: rgba(255, 255, 255, 0.65);
+                  "
+                >
+                  AI-based output with confidence score
+                </p>
+              </div>
+              <div class="badge">📌 Latest analysis</div>
+            </div>
+
+            <div class="preview">
+              <img
+                src="{{ url_for('static', filename='uploads/' + img_path.split('/')[-1]) }}"
+                alt="Uploaded Image"
+              />
+            </div>
+
+            <div class="kv">
+              <div class="box">
+                <div class="label">Prediction</div>
+                <div
+                  class="value {% if prediction.label|lower == 'real' %}real{% else %}fake{% endif %}"
+                >
+                  {{ prediction.label }}
+                </div>
+              </div>
+
+              <div class="box">
+                <div class="label">Confidence</div>
+                <div class="value">{{ prediction.confidence }}%</div>
+                <div class="progress" aria-hidden="true">
+                  <div class="bar" id="confBar"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+          {% endif %}
+        </div>
+
+        <!-- Right: How it works + Features + Disclaimer -->
+        <aside class="card">
+          <section class="info">
+            <h3>How it works</h3>
+            <ul class="list">
+              <li class="item">
+                <div class="bubble">1</div>
+                <p><strong>Upload</strong> an image you want to verify.</p>
+              </li>
+              <li class="item">
+                <div class="bubble">2</div>
+                <p>
+                  <strong>AI analyzes</strong> pixel artifacts, texture,
+                  lighting, and facial details to detect manipulation patterns.
+                </p>
+              </li>
+              <li class="item">
+                <div class="bubble">3</div>
+                <p>
+                  <strong>Get results</strong> (Real/Deepfake) with a confidence
+                  score for quick decision support.
+                </p>
+              </li>
+            </ul>
+
+            <div style="height: 14px"></div>
+
+            <h3>Key features</h3>
+            <ul class="list">
+              <li class="item">
+                <div class="bubble">⚡</div>
+                <p><strong>Fast</strong> processing and clean UI</p>
+              </li>
+              <li class="item">
+                <div class="bubble">🛡️</div>
+                <p><strong>Privacy-first</strong> (no permanent storage)</p>
+              </li>
+              <li class="item">
+                <div class="bubble">📊</div>
+                <p><strong>Confidence score</strong> for transparency</p>
+              </li>
+            </ul>
+
+            <div class="disclaimer">
+              <strong>⚠️ Disclaimer:</strong> This tool provides
+              <strong>probabilistic AI predictions</strong> and may produce
+              false positives/negatives. It is intended as a decision-support
+              system and should not be used as legal, forensic, or definitive
+              proof of authenticity. Combine results with additional
+              verification methods for important decisions.
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <footer>Promoting digital trust through responsible AI.</footer>
+    </div>
+
+    <script>
+      const fileUpload = document.getElementById("file-upload");
+      const fileTitle = document.getElementById("fileTitle");
+      const fileHint = document.getElementById("fileHint");
+      const resetBtn = document.getElementById("resetBtn");
+      const dropArea = document.getElementById("dropArea");
+
+      function setFileUI(file) {
+        if (!file) {
+          fileTitle.textContent = "Choose an image";
+          fileHint.textContent = "PNG, JPG, JPEG • Recommended under 10MB";
+          return;
+        }
+        fileTitle.textContent = file.name;
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        fileHint.textContent = `${file.type || "image"} • ${sizeMB} MB`;
+      }
+
+      fileUpload.addEventListener("change", () => {
+        setFileUI(fileUpload.files && fileUpload.files[0]);
+      });
+
+      resetBtn.addEventListener("click", () => {
+        fileUpload.value = "";
+        setFileUI(null);
+      });
+
+      // Drag & drop polish
+      ["dragenter", "dragover", "dragleave", "drop"].forEach((evt) => {
+        dropArea.addEventListener(evt, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+      });
+
+      ["dragenter", "dragover"].forEach((evt) => {
+        dropArea.addEventListener(evt, () => {
+          dropArea.style.borderColor = "rgba(255, 61, 0, 0.55)";
+          dropArea.style.boxShadow = "0 0 0 10px rgba(255, 61, 0, 0.18)";
+          dropArea.style.background = "rgba(255, 61, 0, 0.07)";
+        });
+      });
+
+      ["dragleave", "drop"].forEach((evt) => {
+        dropArea.addEventListener(evt, () => {
+          dropArea.style.borderColor = "rgba(255, 255, 255, 0.22)";
+          dropArea.style.boxShadow = "none";
+          dropArea.style.background = "rgba(255, 255, 255, 0.04)";
+        });
+      });
+
+      dropArea.addEventListener("drop", (e) => {
+        const dt = e.dataTransfer;
+        if (dt && dt.files && dt.files[0]) {
+          fileUpload.files = dt.files;
+          fileUpload.dispatchEvent(new Event("change"));
+        }
+      });
+
+      // Confidence progress bar (if result exists)
+      const confBar = document.getElementById("confBar");
+      {% if prediction and img_path %}
+      (function () {
+        const conf = Number("{{ prediction.confidence }}") || 0;
+        if (confBar) confBar.style.width = Math.max(0, Math.min(conf, 100)) + "%";
+      })();
+      {% endif %}
+    </script>
+  </body>
+</html>

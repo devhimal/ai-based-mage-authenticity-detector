@@ -92,4 +92,4 @@ def preprocess_images(image_size=(96, 96), split_ratios=(0.7, 0.15, 0.15), max_i
 if __name__ == "__main__":
     # To train on a smaller subset of data, you can specify the max_images_per_class parameter.
     # For example, to use 1000 images from each class (real and fake):
-    preprocess_images(max_images_per_class=1000)
+    preprocess_images(max_images_per_class=7038)

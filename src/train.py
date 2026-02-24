@@ -9,6 +9,13 @@ from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 import matplotlib.pyplot as plt
 
 
+def preprocess_image(img):
+    """Applies random brightness and contrast to an image."""
+    img = tf.image.random_brightness(img, max_delta=0.2)
+    img = tf.image.random_contrast(img, lower=0.8, upper=1.2)
+    return img
+
+
 def train_model(
     img_size=(96, 96),
     batch_size=128,
@@ -42,6 +49,7 @@ def train_model(
         zoom_range=0.1,
         horizontal_flip=True,
         fill_mode="nearest",
+        preprocessing_function=preprocess_image,
     )
 
     # Only rescale for validation and test sets
